@@ -2,8 +2,9 @@
 $array = explode(',', $_GET['array']);
 
 // 修正はここから
-for ($i  = 0 ; $i < count($array) ; $i++)  {
-    for ($j = 1 ; $j < count($array) ; $j++) {
+$lenght = count($array);
+for ($i = 0; $i < $lenght - 1; $i++) {
+    for ($j = 1; $j < $lenght - $i; $j++) {
         if ($array [$j - 1]   >  $array [ $j ]){
             //退避
             $tmp = $array[ $j ];
