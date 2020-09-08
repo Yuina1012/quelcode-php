@@ -128,6 +128,9 @@ if (isset($_REQUEST['rt'])) {
                 $member['id']
             ));
             echo '元投稿';
+            var_dump($rt_data['b.id']);
+            var_dump($delete);
+            
         }
         elseif ((int)$rt_msg['retweet_post_id'] !== 0) {
             
@@ -137,6 +140,9 @@ if (isset($_REQUEST['rt'])) {
                 $member['id']
             ));
             echo 'RT';
+            var_dump($rt_msg['retweet_post_id']);
+            var_dump($delete);
+
         }
 
     header('Location:index.php?='.$rt_msg['retweet_post_id']);
