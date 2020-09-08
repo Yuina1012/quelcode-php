@@ -112,6 +112,7 @@ if (isset($_REQUEST['rt'])) {
     //既にそのユーザーがRTした投稿データ
 	elseif ((int)$rt_count['rt_cnt'] >= 1) { 
     if ((int)$rt_msg['retweet_post_id'] === 0) {
+      echo 'あああ';
       $delete = $db->prepare('delete from posts where id=? =member_id=?');
       $delete->execute(array(
         $rt_msg['id'],
@@ -119,6 +120,7 @@ if (isset($_REQUEST['rt'])) {
       ));
     }
     elseif ((int)$rt_msg['retweet_post_id'] !== 0) {
+      echo 'いいい';
       $delete = $db->prepare('delete from posts  retweet_post_id = ? and retweet_member_id = ?'); 
             $delete->execute(array(
               $rt_msg['retweet_post_id'],
