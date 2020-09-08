@@ -274,10 +274,23 @@ foreach ($posts as $post):
                 <!-- RT機能 -->
                 <!-- カウント表示 -->
                 <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>] 
-			<?php 
+            <?php 
+            //必要データ取得
+            	$retweet  = $db->prepare('select id, message , member_id, retweet_post_id, retweet_member_id from posts where id=? order by created desc '); 
+                $retweet->execute(array($_REQUEST['rt']));
+                $rt_msg = $retweet->fetch();
+                //カウント
         $retweets_total=$db->prepare('select count(retweet_post_id) as rt_cnt from posts where retweet_post_id =? and retweet_member_id > 0 ');
-          $retweets_total->execute(array($post['id'] ));
-          $retweet_total=$retweets_total->fetch();
+        //元投稿
+        if((int)$rt_msg['retweet_post_id'] === 0){
+            $retweets_total->execute(array($post['id'] ));
+            $retweet_total=$retweets_total->fetch();
+            }
+            //RT
+            elseif((int)$rt_msg['retweet_post_id'] !== 0){
+            $retweets_total->execute(array($post['retweet_post_id'] ));
+            $retweet_total=$retweets_total->fetch();
+            }
           // RTされていない投稿
        if((int)$retweet_total['rt_cnt']===0)
          {
