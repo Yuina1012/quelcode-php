@@ -111,12 +111,21 @@ if (isset($_REQUEST['rt'])) {
 		//削除	
     //既にそのユーザーがRTした投稿データ
 	elseif ((int)$rt_count['rt_cnt'] >= 1) { 
-        $delete = $db->prepare('delete from posts where retweet_post_id = ? and retweet_member_id = ?'); 
+    if ((int)$rt_msg['retweet_post_id'] === 0) {
+      $delete = $db->prepare('delete from posts where id=? =member_id=?');
+      $delete->execute(array(
+        $rt_msg['id'],
+        $member['id']
+      ));
+    }
+    elseif ((int)$rt_msg['retweet_post_id'] !== 0) {
+      $delete = $db->prepare('delete from posts  retweet_post_id = ? and retweet_member_id = ?'); 
+            $delete->execute(array(
+              $rt_msg['retweet_post_id'],
+              $member['id']
+            ));
+          }
 
-			$delete->execute(array(
-				$rt_msg['retweet_post_id'],
-				$member['id']
-			));
     header('Location:index.php?='.$rt_msg['retweet_post_id']);
     exit();
     }
