@@ -298,12 +298,22 @@ foreach ($posts as $post):
        </span></a>]
         <?php
         //RT数のある投稿
-        }elseif((int)$retweet_total['rt_cnt'] >=1)
+            //元投稿
+        }elseif((int)$retweet_total['rt_cnt'] >=1 and (int)$rt_msg['retweet_post_id'] ===0) 
             {
                 ?>          
         [<a href="index.php?rt=<?php echo h($post['id']); ?>" style="color:DarkCyan; text-decoration:none;" "><span><?php  echo h($retweet_total['rt_cnt']);?>RT
         </span></a>]                        
-        <?php  }?>
+      <?php
+        //RT
+    }elseif((int)$retweet_total['rt_cnt'] >=1 and (int)$rt_msg['retweet_post_id'] !==0) 
+    {
+        ?>          
+[<a href="index.php?rt=<?php echo h($post['id']); ?>" style="color:DarkCyan; text-decoration:none;" "><span><?php  echo h($retweet_total['rt_cnt']);?>RT
+</span></a>]                        
+<?php  }?>
+
+
 <!-- いいねボタン -->
 <?php     
             $likes_total = $db->prepare('select count(post_id) as cnt from likes where post_id =?  group by post_id');               
