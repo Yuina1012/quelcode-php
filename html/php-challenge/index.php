@@ -83,7 +83,7 @@ if (isset($_REQUEST['rt'])) {
     }
     //そのユーザが初めてRT
 	if ((int)$rt_count['rt_cnt'] === 0) { 
-        var_dump($rt_count['rt_cnt']);
+
         //RTをDBに挿入
 		$sent_rt = $db->prepare('INSERT INTO posts SET message=?, member_id =?, reply_post_id=0, retweet_post_id=?,      retweet_member_id=?, created=now() ');
         //大元RTする
