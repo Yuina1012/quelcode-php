@@ -62,8 +62,9 @@ if (isset($_REQUEST['res'])) {
 if (isset($_REQUEST['rt'])) { 
 	$retweet  = $db->prepare('select id, message , member_id, retweet_post_id, retweet_member_id from posts where id=? order by created desc '); 
 	$retweet->execute(array($_REQUEST['rt']));
-	$rt_msg = $retweet->fetch();
-	$rt_counts = $db->prepare('SELECT  count(*) as rt_cnt from posts where retweet_post_id =? and retweet_member_id = ? '); 
+    $rt_msg = $retweet->fetch();
+    
+	$rt_counts = $db->prepare('SELECT  count(retweet_post_id) as rt_cnt from posts where retweet_post_id =? and retweet_member_id = ? '); 
 
     //元投稿をRT
     if ((int)$rt_msg['retweet_post_id'] === 0) {      
@@ -82,6 +83,7 @@ if (isset($_REQUEST['rt'])) {
     }
     //そのユーザが初めてRT
 	if ((int)$rt_count['rt_cnt'] === 0) { 
+        var_dump($rt_count['rt_cnt']);
         //RTをDBに挿入
 		$sent_rt = $db->prepare('INSERT INTO posts SET message=?, member_id =?, reply_post_id=0, retweet_post_id=?,      retweet_member_id=?, created=now() ');
         //大元RTする
@@ -107,43 +109,25 @@ if (isset($_REQUEST['rt'])) {
         header('Location:index.php?='.$rt_msg['retweet_post_id']);
         exit();
     }
-    /*
-        //リレーション
-    
-        $rt_datas = $db->prepare('SELECT a.id, a.message,a.member_id, b.id, b.retweet_post_id, b.retweet_member_id FROM posts a left join posts b on a.id = b.retweet_post_id where a.message = b.message and a.id = ? ');
-        if((int)$rt_msg['retweet_post_id'] === 0){
-            echo '内部で結合';
-            $rt_datas->execute(array(
-                $rt_msg['id']
-            ));
-            $rt_data = $rt_datas ->fetch();
-            var_dump($rt_data);
-        }*/
     //削除	
     //既にそのユーザーがRTした投稿データ
-	elseif ((int)$rt_count['rt_cnt'] >= 1) { 
+	elseif ((int)$rt_count['rt_cnt'] !== 0) { 
         if ((int)$rt_msg['retweet_post_id'] === 0) {
+
             //元投稿＊
-            $delete = $db->prepare('delete from posts where id=? and member_id=?');
+            $delete = $db->prepare('delete from posts where retweet_post_id=? and retweet_member_id=?');
             $delete->execute(array(
                 $rt_msg['id'],
                 $member['id']
             ));
-            echo '元投稿';
-            var_dump($delete);
-            
         }
         elseif ((int)$rt_msg['retweet_post_id'] !== 0) {
             //
-            $delete = $db->prepare('delete from posts  retweet_post_id = ? and retweet_member_id = ?'); 
+            $delete = $db->prepare('delete from posts  where retweet_post_id = ? and retweet_member_id = ?'); 
             $delete->execute(array(
                 $rt_msg['retweet_post_id'],
                 $member['id']
             ));
-            echo 'RT';
-            var_dump($rt_msg['retweet_post_id']);
-            var_dump($delete);
-
         }
 
     header('Location:index.php?='.$rt_msg['retweet_post_id']);
