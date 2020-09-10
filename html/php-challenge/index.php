@@ -64,31 +64,21 @@ if (isset($_REQUEST['rt'])) {
 	$retweet->execute(array($_REQUEST['rt']));
 	$rt_msg = $retweet->fetch();
 	$rt_counts = $db->prepare('SELECT  count(*) as rt_cnt from posts where retweet_post_id =? and retweet_member_id = ? '); 
-		//元投稿をRT
-		if ((int)$rt_msg['retweet_post_id'] === 0) {
 
-			$rt_counts->execute(array(
-				$rt_msg['id'],
+    //元投稿をRT
+    if ((int)$rt_msg['retweet_post_id'] === 0) {      
+         $rt_counts->execute(array(
+            $rt_msg['id'],
 				$member['id']
 			));
 			$rt_count = $rt_counts->fetch();
 			//RTをRT
-		} elseif ((int)$rt_msg['retweet_post_id'] !== 0) {
-	
+		} elseif ((int)$rt_msg['retweet_post_id'] !== 0) {	
 			$rt_counts->execute(array(
-				$rt_msg['retweet_post_id'],
+                $rt_msg['retweet_post_id'],
 				$member['id']
 			));
 			$rt_count = $rt_counts->fetch();
-    }
-    //リレーション
-    $rt_datas = $db->prepare('SELECT a.id, a.message,a.member_id, b.id, b.retweet_post_id, b.retweet_member_id FROM posts a left join posts b on a.id = b.retweet_post_id where a.message = b.message and a.id = ? ');
-    if((int)$rt_msg['retweet_post_id'] === 0){
-        echo '内部で結合';
-        $rt_datas->execute(array(
-            $rt_msg['id']
-        ));
-        $rt_data = $rt_datas ->fetch();
     }
     //そのユーザが初めてRT
 	if ((int)$rt_count['rt_cnt'] === 0) { 
@@ -116,19 +106,30 @@ if (isset($_REQUEST['rt'])) {
 		}
         header('Location:index.php?='.$rt_msg['retweet_post_id']);
         exit();
-	}
+    }
+    /*
+        //リレーション
+    
+        $rt_datas = $db->prepare('SELECT a.id, a.message,a.member_id, b.id, b.retweet_post_id, b.retweet_member_id FROM posts a left join posts b on a.id = b.retweet_post_id where a.message = b.message and a.id = ? ');
+        if((int)$rt_msg['retweet_post_id'] === 0){
+            echo '内部で結合';
+            $rt_datas->execute(array(
+                $rt_msg['id']
+            ));
+            $rt_data = $rt_datas ->fetch();
+            var_dump($rt_data);
+        }*/
     //削除	
     //既にそのユーザーがRTした投稿データ
 	elseif ((int)$rt_count['rt_cnt'] >= 1) { 
-        if ((int)$rt_data['a.retweet_post_id'] === 0) {
+        if ((int)$rt_msg['retweet_post_id'] === 0) {
             //元投稿＊
             $delete = $db->prepare('delete from posts where id=? and member_id=?');
             $delete->execute(array(
-                $rt_data['b.id'],
+                $rt_msg['id'],
                 $member['id']
             ));
             echo '元投稿';
-            var_dump($rt_data['b.id']);
             var_dump($delete);
             
         }
@@ -285,49 +286,37 @@ foreach ($posts as $post):
                 <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>] 
             <?php 
             //必要データ取得
-            echo 'あああ';
             $retweet  = $db->prepare('select id, message , member_id, retweet_post_id, retweet_member_id from posts where id=? order by created desc '); 
             $retweet->execute(array($_REQUEST['rt']));
             $rt_msg = $retweet->fetch();
+
             //カウント
             $retweets_total=$db->prepare('select count(retweet_post_id) as rt_cnt from posts where retweet_post_id =? and retweet_member_id > 0 ');
             //元投稿
-            if((int)$rt_msg['retweet_post_id'] === 0){
-                echo 'いいい';
-                $retweets_total->execute(array($rt_msg['id'] ));
+            if((int)$post['retweet_post_id'] === 0){
+                $retweets_total->execute(array($post['id'] ));
                 $retweet_total=$retweets_total->fetch();
             }
             //RT
-            elseif((int)$rt_msg['retweet_post_id'] !== 0){
-                echo 'ううう';
-                $retweets_total->execute(array($rt_msg['retweet_post_id'] ));
+            elseif((int)$post['retweet_post_id'] !== 0){
+                $retweets_total->execute(array($post['retweet_post_id'] ));
                 $retweet_total=$retweets_total->fetch();
             }
             // RTされていない投稿
-            if((int)$retweet_total['rt_cnt']===0)
-            { 
-                echo 'えええ';
+ if((int)$retweet_total['rt_cnt']===0){ 
                 ?>
        [<a href="index.php?rt=<?php echo h($post['id']); ?>" style="color:blue; text-decoration:none;" ><span>RT
            </span></a>]
            <?php
         //RT数のある投稿
         //元投稿
-    }elseif((int)$retweet_total['rt_cnt'] >=1 and (int)$rt_msg['retweet_post_id'] ===0) 
+}elseif((int)$retweet_total['rt_cnt'] >= 1 ) 
     {
-        echo 'おおお';
         ?>          
-        [<a href="index.php?rt=<?php echo h($post['id']); ?>" style="color:DarkCyan; text-decoration:none;" "><span><?php  echo h($retweet_total['rt_cnt']);?>RT
+        [<a href="index.php?rt=<?php echo h($post['id']); ?>" style="color:DarkCyan; text-decoration:none;" ><span><?php  echo h($retweet_total['rt_cnt']);?>RT
     </span></a>]                        
-    <?php
-        //RT
-    }elseif((int)$retweet_total['rt_cnt'] >=1 and (int)$rt_msg
-    ['retweet_post_id'] !==0) 
-    {
-        echo 'カカか';
-        ?>          
-[<a href="index.php?rt=<?php echo h($post['id']); ?>" style="color:DarkCyan; text-decoration:none;" "><span><?php  echo h($retweet_total['rt_cnt']);?>RT
-</span></a>]                        
+
+
 <?php  }?>
 
 
